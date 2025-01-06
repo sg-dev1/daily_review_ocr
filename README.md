@@ -1,3 +1,29 @@
+# Ocr-App
+
+- Based on expo app template (created with npx create-expo-app@latest)
+- Take picture using [Expo Camera module](https://docs.expo.dev/versions/latest/sdk/camera)
+- Uses OCR functionality taken from [expo-ocr-example](https://github.com/wodin/expo-ocr-example/tree/main)
+
+- Make builds in cloud environment using EAS CLI
+  (setup following this instructions: https://docs.expo.dev/get-started/set-up-your-environment/?mode=development-build)
+
+- Create a dev build for Android using
+
+  ```bash
+  eas build --platform android --profile development
+  ```
+
+- Create a standalone app
+  ```bash
+  eas build --platform android --profile production
+  ```
+
+(Can also build for ios using `--platform ios`)
+
+---
+
+original docu:
+
 # Welcome to your Expo app 👋
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
