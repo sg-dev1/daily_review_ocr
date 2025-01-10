@@ -1,0 +1,18 @@
+High Prio
+- Add edit mode to text box of regocnized text
+- Implement feature to send text to backend
+   * Needs also to select book and author
+   * In first version just as simple text boxes
+   * app should remember these so they can be selected later on from a list of
+     known books
+
+Further Improvements
+- Improve text recoginition
+   * still some issues with words etc. not recognized properly (writing weired text)
+   * maybe could do some post processing - e.g. spell check and change to similar 
+     (correctly spelled) words
+- Improve UI
+   1) Full screen of camera (find out what needs to be adapted)
+   2) Display page: would be nice to be able to select text in image
+      (similar as the AI feature in google pixel)
+      (or as in Readwise app)

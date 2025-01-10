@@ -1,10 +1,6 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+//import { StyleSheet } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { OcrView } from '../../components/OcrView';
+import OcrView from '../../components/OcrView';
 
 export default function HomeScreen() {
   return (
@@ -48,6 +44,7 @@ export default function HomeScreen() {
   );
 }
 
+/*
 const styles = StyleSheet.create({
   titleContainer: {
     flexDirection: 'row',
@@ -66,3 +63,4 @@ const styles = StyleSheet.create({
     position: 'absolute',
   },
 });
+*/
