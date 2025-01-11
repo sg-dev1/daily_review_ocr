@@ -1,5 +1,5 @@
 High Prio
-- Add edit mode to text box of regocnized text
+- Add edit mode to text box of regocnized text                   // done
 - Implement feature to send text to backend
    * Needs also to select book and author
    * In first version just as simple text boxes
