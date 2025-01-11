@@ -13,9 +13,9 @@
   eas build --platform android --profile development
   ```
 
-- Create a standalone app
+- Create a standalone app (builds an apk)
   ```bash
-  eas build --platform android --profile production
+  eas build --platform android --profile preview
   ```
 
 (Can also build for ios using `--platform ios`)
