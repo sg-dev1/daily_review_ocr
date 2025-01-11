@@ -1,10 +1,12 @@
 High Prio
+- Print success/ error messages                                  // TODO
+    (currently only logged)
 - Add edit mode to text box of regocnized text                   // done
-- Implement feature to send text to backend
+- Implement feature to send text to backend                      // partly
    * Needs also to select book and author
    * In first version just as simple text boxes
-   * app should remember these so they can be selected later on from a list of
-     known books
+   * app should remember these so they can be                    // TODO
+     selected later on from a list of known books
 
 Further Improvements
 - Improve text recoginition

@@ -4,7 +4,9 @@ import { StyleSheet, Text, Image, TouchableOpacity, View, TextInput } from 'reac
 import CustomScrollView from './CustomScrollView';
 import CustomCameraView from './CustomCameraView';
 import { postLogin, postTextSnippet } from '../lib/api-client';
+import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 
+const storage = new MMKVLoader().initialize();
 const OcrView = () => {
   const [text, setText] = useState('');
   const [capturedPicture, setCapturedPicture] = useState<CameraCapturedPicture | null>(null);
@@ -14,6 +16,10 @@ const OcrView = () => {
   const [note, setNote] = useState('');
   const [page, setPage] = useState('');
   const [submitButtonDisabled, setSubmitButtonDisabled] = useState(false);
+
+  const [url] = useMMKVStorage<string>('url', storage);
+  const [username] = useMMKVStorage<string>('username', storage);
+  const [password] = useMMKVStorage<string>('password', storage);
 
   const onResetButtonPressed = () => {
     setText('');
@@ -25,19 +31,34 @@ const OcrView = () => {
   };
 
   const onSubmitButtonPressed = async () => {
-    setSubmitButtonDisabled(true);
-    await postLogin({
-      username: 'string',
-      password: 'string',
-    });
+    if (!username || !password || !url) {
+      console.log('username, password, or url not set');
+      return;
+    }
+    if (text.length === 0 || bookTitle.length === 0 || author.length === 0) {
+      console.log('text, bookTitle, or author is empty');
+      return;
+    }
 
-    await postTextSnippet({
-      text: text,
-      bookTitle: bookTitle,
-      bookAuthor: author,
-      note: '',
-      location: '',
-    });
+    setSubmitButtonDisabled(true);
+    await postLogin(
+      {
+        username: username,
+        password: password,
+      },
+      url
+    );
+
+    await postTextSnippet(
+      {
+        text: text,
+        bookTitle: bookTitle,
+        bookAuthor: author,
+        note: note,
+        location: page,
+      },
+      url
+    );
 
     // TODO give feedback if successful (currently only logged to terminal)
 
@@ -54,7 +75,7 @@ const OcrView = () => {
         <CustomScrollView>
           <View style={styles.buttonContainer}>
             <TouchableOpacity style={styles.button} onPress={onResetButtonPressed}>
-              <Text style={styles.buttonText}>Reset</Text>
+              <Text style={styles.buttonText}>Back</Text>
             </TouchableOpacity>
             <TouchableOpacity style={styles.button} onPress={onNextButtonPressed}>
               <Text style={styles.buttonText}>Next</Text>
