@@ -4,10 +4,17 @@ import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import { postLogin, postTextSnippet } from '../../lib/api-client';
 import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 import { globalStyles as styles } from '../styles';
+import Dropdown from 'react-native-input-select';
+import { TSelectedItem } from 'react-native-input-select/lib/typescript/src/types/index.types';
 
 interface TextSnippetSubmitViewProps {
   text: string;
   resetPreviousSteps: () => void;
+}
+
+interface BookType {
+  title: string;
+  author: string;
 }
 
 const storage = new MMKVLoader().initialize();
@@ -22,6 +29,10 @@ const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitVi
   const [url] = useMMKVStorage<string>('url', storage);
   const [username] = useMMKVStorage<string>('username', storage);
   const [password] = useMMKVStorage<string>('password', storage);
+  const [books, setBooks] = useMMKVStorage<BookType[]>('books', storage, []);
+
+  const [selectedBook, setSelectedBook] = useState<TSelectedItem | TSelectedItem[]>();
+  const bookOptions = books.map((book) => ({ label: book.title, value: book.title }));
 
   const onSubmitButtonPressed = async () => {
     if (!username || !password || !url) {
@@ -67,6 +78,13 @@ const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitVi
       return;
     }
 
+    // store book for later use
+    const newBooks = [...books];
+    if (newBooks.filter((value) => value.author === author && value.title === bookTitle).length === 0) {
+      newBooks.push({ title: bookTitle, author: author });
+    }
+    setBooks(newBooks);
+
     resetPreviousSteps();
     setErrorText('');
     setSubmitButtonDisabled(false);
@@ -75,6 +93,24 @@ const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitVi
   return (
     <CustomScrollView>
       {errorText && <Text style={styles.errorTextContainer}>{errorText}</Text>}
+
+      <Dropdown
+        label="Books"
+        placeholder="Select a book..."
+        options={bookOptions}
+        selectedValue={selectedBook}
+        onValueChange={(value) => {
+          setSelectedBook(value);
+          const bookLst = books.filter((book) => book.title === value);
+          if (bookLst.length >= 1) {
+            setBookTitle(bookLst[0].title);
+            setAuthor(bookLst[0].author);
+          } else {
+            console.warn('Book with value ', value, ' not found in book list');
+          }
+        }}
+        primaryColor={'green'}
+      />
 
       <View style={styles.formRowContainer}>
         <Text style={styles.formLabel}>Book Title:</Text>
