@@ -1,5 +1,5 @@
 High Prio
-- Print success/ error messages                                  // TODO
+- Show error messages                                            // done
     (currently only logged)
 - Add edit mode to text box of regocnized text                   // done
 - Implement feature to send text to backend                      // partly

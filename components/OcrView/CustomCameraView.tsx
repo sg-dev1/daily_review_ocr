@@ -1,8 +1,8 @@
 import { CameraCapturedPicture, CameraView, useCameraPermissions } from 'expo-camera';
 import React, { useRef, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Text, Button } from 'react-native';
-import OcrModule from '../modules/ocr-module';
-import CustomScrollView from './CustomScrollView';
+import OcrModule from '../../modules/ocr-module';
+import CustomScrollView from '../CustomScrollView';
 
 interface CustomCameraViewProps {
   setText: (value: string) => void;

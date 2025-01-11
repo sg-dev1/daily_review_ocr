@@ -1,6 +1,6 @@
 //import { StyleSheet } from 'react-native';
 
-import OcrView from '../../components/OcrView';
+import OcrView from '../../components/OcrView/OcrView';
 
 export default function HomeScreen() {
   return (
