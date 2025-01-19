@@ -1,0 +1,2 @@
+# Add your nginx.crt here, will not be committed to source control
+*.crt
