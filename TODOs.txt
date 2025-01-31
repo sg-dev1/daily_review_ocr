@@ -7,6 +7,10 @@ High Prio
 
     ---> issue was that the .crt file was not included in remote build because of .gitignore
 
+Low Prio
+- eas remote build: expo doctor failed
+   Advice: Use 'npx expo install --check' to review and upgrade your dependencies.
+
 - Show error messages                                            // done
     (currently only logged)
 - Add edit mode to text box of regocnized text                   // done
