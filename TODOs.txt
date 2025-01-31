@@ -4,6 +4,9 @@ High Prio
    > A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
    > Android resource linking failed
      ERROR: /home/expo/workingdir/build/android/app/src/main/res/xml/network_security_config.xml:5: AAPT: error: resource raw/nginx (aka com.sgdev.ocrapp:raw/nginx) not found.
+
+    ---> issue was that the .crt file was not included in remote build because of .gitignore
+
 - Show error messages                                            // done
     (currently only logged)
 - Add edit mode to text box of regocnized text                   // done
