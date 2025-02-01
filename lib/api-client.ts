@@ -1,4 +1,4 @@
-// TODO this should be shared with the web "fronted" of the project
+// TODO this should be shared with the web "frontend" of the project
 //   --> this app project needs to be integrated into the turbo repo project
 import axios, { AxiosError } from 'axios';
 
@@ -20,10 +20,12 @@ interface TextSnippetDtoType {
 export const checkedAxiosError = (error: unknown): string => {
   let result = '';
   if (error instanceof AxiosError) {
-    result = error.message + ', ' + error.code + ', Http Status:' + error.response?.status;
+    result =
+      '[' + error.name + '] ' + error.message + ' (code=' + error.code + ') Http Status:' + error.response?.status;
     if (error.response?.data?.message) {
       result += ', ' + error.response.data.message;
     }
+    result += '\nStacktrace:\n' + error.stack;
   } else {
     result = 'Unknown error: ' + String(error);
   }
@@ -44,11 +46,30 @@ const buildBackendUrl = (endpoint: string, baseUrlToUse?: string): string => {
   return finalUrl;
 };
 
+// alternative using fetch api
+/*
+const postRequest = async (endpoint: string, data: any): Promise<Response> => {
+  const jsonData = JSON.stringify(data);
+  //console.log('jsonData', jsonData);
+  const response = await fetch(endpoint, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: jsonData,
+  });
+  return response;
+};
+*/
+
 export const postLogin = async (data: UserLoginDtoType, baseUrl?: string) => {
   try {
     const response = await axios.post(buildBackendUrl('auth/login', baseUrl), data);
+    //const response = await postRequest(buildBackendUrl('auth/login', baseUrl), data);
     if (debug) {
       console.log('postLogin response', response.status, response.data);
+      //console.log('postLogin response', response.status, response);
     }
     return response;
   } catch (error: unknown) {
@@ -64,8 +85,10 @@ export const postLogin = async (data: UserLoginDtoType, baseUrl?: string) => {
 export const postTextSnippet = async (data: TextSnippetDtoType, baseUrl?: string) => {
   try {
     const response = await axios.post(buildBackendUrl('text-snippet', baseUrl), data);
+    //const response = await postRequest(buildBackendUrl('text-snippet', baseUrl), data);
     if (debug) {
       console.log('postLogin response', response.status, response.data);
+      //console.log('postLogin response', response.status, await response.json());
     }
     return response;
   } catch (error: unknown) {

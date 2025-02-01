@@ -1,8 +1,9 @@
 # Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
 
 # prebuild folders
-android
-ios
+# Note: If the "/" at the beginning is forgotten, the native module (OcrModule) is no longer included in the build
+/android
+/ios
 
 # dependencies
 node_modules/
