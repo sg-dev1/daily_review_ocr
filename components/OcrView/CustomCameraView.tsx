@@ -51,7 +51,15 @@ const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps
 
     try {
       const recognizedText = await OcrModule.recognizeTextAsync(path);
-      setText(recognizedText);
+      const textParts = recognizedText.split('<TERMINATOR>');
+      // BEGIN DEBUG
+      console.log('---');
+      for (let i = 0; i < textParts.length; i++) {
+        console.log(i, ':', textParts[i]);
+      }
+      console.log('---');
+      // END DEBUG
+      setText(textParts[0]);
     } catch (err) {
       console.error(err);
       setText('');

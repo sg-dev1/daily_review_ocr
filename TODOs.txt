@@ -1,15 +1,70 @@
-High Prio
-- Fix certificate issue
+Objective
+  - Improve text recognition (on Android) - uses Google's ML Kit (see modules/ocr-module/android)
+  - Can ignore the ios version
+Observations
+  - Current interface just returns the whole string
+  - Full stops at the end of a text are sometimes not regocnized (maybe resolution of image is too small)
+  - It is jumped between text blocks (do not know how the sorting works, if there is a sorting at all)
+  - Confusion between full stops and commas
+  - Umlauts (ä, ö, ü) not regocnized properly (sometimes just removed, sometimes replaced with accent, e.g. á)
+  - Newlines are set as they are regocnized in the text
+  - Capital letter in the middle of a sentence
+  - Buchstaben in Wort ausgelassen oder neue hinzugefügt (eine Rechtschreibprüfung mit ausbessern auf das wahrscheinlichste korrekte Wort sollte da helfen)
+  - Orientation of image is sometimes wrong (e.g. flipped by 90/ 180 degrees)
+  - Issues with distorted images in books
+  - If there are bad lighting conditions (leading to unsharp images) the results are very bad,
+    with good lighting you get quite accurate results (the rotation of the images seems not to matter, however it is a bit anoying when it is rotated)
+TODOs
+Advanced Text (Post)processing
+  - Need to return a more complex object containing important data returned by ML kit:
+    * textBlocks
+      * <block>.text
+      * <block>.cornerPoints
+      * <block>.boundingBox
+      * <block>.lines
+        * <line>.text
+        * <line>.cornerPoints
+        * <line>.boundingBox
+        * <line>.elements
+           * <element>.text
+           * <element>.cornerPoints
+           * <element>.boundingBox
+  - With this information, own sorting can be implemented (first version still returning a string)
+  - In more advanced version info could be mapped to the image to highlight the text there (as on Google Pixel phone with its text recognition function)
+  - Remove newlines in a text block joining the lines
+Grammar check
+  - Run text through grammar check and fix errors
+     * Change single words to correct ones
+     * Fix punctuation errors
+  - Could use the language identification of ML Kit to start with
+     https://developers.google.com/ml-kit/language/identification/android
+  - Find alternatives for language processing (grammar correction etc.)
+Improve images taken by camera
+  - Increase resolution
+  - Rotate image (given device's current orientation)
+  - Use proper focus
+  - Could also play with zoom, torch, and flash mode
+  Things to try:
+    - @flash: could enable/ disable it with button, or use enableTorch boolean on CameraView component
+    - Set responsiveOrientationWhenOrientationLocked to true, try out onResponsiveOrientationChanged callback
+    - getAvailablePictureSizesAsync()
+    - ratio, e.g. '4:3' | '16:9' | '1:1'
+    - zoom, 0 (default, no zoom) to 1 (max zoom)
+    - CameraPictureOptions (https://docs.expo.dev/versions/latest/sdk/camera/#camerapictureoptions) of takePictureAsync(options)
+       - quality (0 - 1, where 1 is max.)
+       - skipProcessing --> could try to do the processing yourself
+  https://docs.expo.dev/versions/latest/sdk/camera/
+  - Image rotation compensation
+
+----
+
+- Fix certificate issue                                               // done
    Remote build failure in eas with current solution:
    > A failure occurred while executing com.android.build.gradle.internal.res.LinkApplicationAndroidResourcesTask$TaskAction
    > Android resource linking failed
      ERROR: /home/expo/workingdir/build/android/app/src/main/res/xml/network_security_config.xml:5: AAPT: error: resource raw/nginx (aka com.sgdev.ocrapp:raw/nginx) not found.
 
     ---> issue was that the .crt file was not included in remote build because of .gitignore
-
-Low Prio
-- eas remote build: expo doctor failed
-   Advice: Use 'npx expo install --check' to review and upgrade your dependencies.
 
 - Show error messages                                            // done
     (currently only logged)
@@ -21,7 +76,7 @@ Low Prio
      selected later on from a list of known books
 
 Further Improvements
-- Improve text recoginition
+- Improve text recognition
    * still some issues with words etc. not recognized properly (writing weired text)
    * maybe could do some post processing - e.g. spell check and change to similar 
      (correctly spelled) words
