@@ -16,6 +16,12 @@ Observations
     with good lighting you get quite accurate results (the rotation of the images seems not to matter, however it is a bit anoying when it is rotated)
 TODOs
 Advanced Text (Post)processing
+  Things done (in CustomCameraView)                                                      // partly done, column detection missing
+    - Return the whole object detected by ML Kit from the Kotlin code
+       - Able to fully process it in Typescript
+       - No need for new cloud builds to test changes in sorting algorithm etc.
+    - Sorting algorithm incl. column detection
+  Initial thoughts about what to improve/ test etc.
   - Need to return a more complex object containing important data returned by ML kit:
     * textBlocks
       * <block>.text
@@ -32,7 +38,8 @@ Advanced Text (Post)processing
   - With this information, own sorting can be implemented (first version still returning a string)
   - In more advanced version info could be mapped to the image to highlight the text there (as on Google Pixel phone with its text recognition function)
   - Remove newlines in a text block joining the lines
-Grammar check
+Grammar check                                                                            // TODO
+  - Could use https://github.com/liveakshay/expo-spellchecker/tree/main
   - Run text through grammar check and fix errors
      * Change single words to correct ones
      * Fix punctuation errors

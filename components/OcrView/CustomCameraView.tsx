@@ -12,6 +12,7 @@ import CustomScrollView from '../CustomScrollView';
 //import ImageResizer from 'react-native-image-resizer';  // to be decided if this can be removed from dependencies
 import { manipulateAsync } from 'expo-image-manipulator';
 import * as ScreenOrientation from 'expo-screen-orientation';
+import { OcrResult, OcrTextBlock } from '../../modules/ocr-module/src/OcrModule';
 
 interface CustomCameraViewProps {
   setText: (value: string) => void;
@@ -20,7 +21,7 @@ interface CustomCameraViewProps {
 
 const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps) => {
   const debugImageCapture = true;
-  const debugTextprocessing = false;
+  const debugTextprocessing = true;
 
   const [isLoading, setIsLoading] = useState(false);
   const cameraRef = useRef<CameraView>(null);
@@ -257,34 +258,106 @@ const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps
       //console.log('create rresized image...');
       //const result = await ImageResizer.createResizedImage(data.uri, 4000, 3000, 'JPEG', 100, 0);
       //console.log('Image resized, result=', result);
-      await recognizeTextFromImage(data.uri, logMessages);
+      await recognizeTextFromImage(data.uri, data.width, data.height, screenOrientation, logMessages);
       setCapturedPicture(data);
     } else {
       console.warn('cameraRef.current.takePictureAsync returned undefined');
     }
   };
 
-  const recognizeTextFromImage = async (path: string, logMessages: string[]) => {
+  // ---
+
+  const printTextBlocks = (textBlocks: OcrTextBlock[]) => {
+    for (let i = 0; i < textBlocks.length; i++) {
+      const textBlock = textBlocks[i];
+      console.log(`\tBLOCK[${i}] = ${printTextBlock(textBlock)}`);
+    }
+  };
+
+  const printTextBlock = (textBlock: OcrTextBlock) => {
+    const textStart = textBlock.text.slice(0, 20);
+    return (
+      `boundingBox={left: ${textBlock.boundingBox.left.toFixed(2)}, top: ${textBlock.boundingBox.top.toFixed(2)}, ` +
+      `right: ${textBlock.boundingBox.right.toFixed(2)}, bottom: ${textBlock.boundingBox.bottom.toFixed(2)}}, lines=${
+        textBlock.lines.length
+      }, textStart=${textStart}`
+    );
+  };
+
+  const recognizeTextFromImage = async (
+    path: string,
+    imageWidth: number,
+    imageHeight: number,
+    screenOrientation: ScreenOrientation.Orientation,
+    logMessages: string[]
+  ) => {
     setIsLoading(true);
 
     try {
-      const recognizedText = await OcrModule.recognizeTextAsync(path);
-      const textParts = recognizedText.split('<TERMINATOR>');
+      const result: OcrResult = await OcrModule.recognizeTextAsync(path);
+      const { text, ...processingResultRest } = result;
 
       if (debugTextprocessing) {
-        // BEGIN DEBUG
-        console.log('---');
-        for (let i = 0; i < textParts.length; i++) {
-          console.log(i, ':', textParts[i]);
-        }
-        console.log('---');
-        // END DEBUG
+        console.log(`\nNumber of text blocks ${processingResultRest.textBlocks.length}`);
+        printTextBlocks(processingResultRest.textBlocks);
       }
 
-      let resultText = textParts[0];
+      // 1) Sort according to top (e.g. blocks sorted from top to bottom)
+      const sortedTextBlocks = processingResultRest.textBlocks
+        .map((textBlock: OcrTextBlock) => {
+          let xNormalizer, yNormalizer;
+          if (
+            screenOrientation === ScreenOrientation.Orientation.PORTRAIT_UP ||
+            screenOrientation === ScreenOrientation.Orientation.PORTRAIT_DOWN
+          ) {
+            xNormalizer = imageHeight;
+            yNormalizer = imageWidth;
+          } else {
+            xNormalizer = imageWidth;
+            yNormalizer = imageHeight;
+          }
+
+          const normalizedBoundingBox = {
+            left: textBlock.boundingBox.left / xNormalizer,
+            top: textBlock.boundingBox.top / yNormalizer,
+            right: textBlock.boundingBox.right / xNormalizer,
+            bottom: textBlock.boundingBox.bottom / yNormalizer,
+          };
+
+          return { text: textBlock.text, boundingBox: normalizedBoundingBox, lines: textBlock.lines } as OcrTextBlock;
+        })
+        .sort((block1: OcrTextBlock, block2: OcrTextBlock) => block1.boundingBox.top - block2.boundingBox.top);
+
+      if (debugTextprocessing) {
+        console.log('---\n');
+        printTextBlocks(sortedTextBlocks);
+      }
+
+      // 2) Address problems with blocks that are in the same row (sort on left for the row)
+      // -- Main issue here is to detect what is part of a row and what belongs to the next row
+      //    (e.g. do we have multiple rows at all, or only single row, etc.)
+      // -- Downside without having this fix is that rows may be sorted incorrectly if there are more than one column
+      //
+      // - Only valid for PORTRAIT_UP and PORTRAIT_DOWN (for LANDSCAPE it is swapped)
+      //   boundingBox.{top, bottom}   (=y)   < CameraCapturedPicture.width   (e.g. 4032)
+      //   boundingBox.{left, right}   (=x)   < CameraCapturedPicture.height  (e.g. 3024)
+      // - Use this to normalize {left, top, right, bottom} to be in [0;1]
+      // - Examples for column detection:
+      //    - 2 Columns left and right < 0.5 --> 1st column
+      //                                else --> 2nd column
+      //    - For 3 Columns [0.33, 0.66] as split points for left and right
+      //    - For 4 Columns [0.25, 0.5, 0.75]
+      //    ...
+      // TODO
+
+      // 3) Merge a final result text
+      const recognizedText = sortedTextBlocks.map((block: OcrTextBlock) => block.text).join('\n\n');
+
+      // 4) Store text for next render (incl. debug info)
+      let resultText = recognizedText;
       if (debugImageCapture) {
         const logMsg = logMessages.join('\n-\n');
-        resultText = '/// BEGIN DEBUG ///\n' + logMsg + '\n/// END DEBUG ///' + '\n\n\n' + textParts[0];
+        resultText = '/// BEGIN DEBUG ///\n' + logMsg + '\n/// END DEBUG ///' + '\n\n\n' + recognizedText; //+ textParts[0];
       }
 
       setText(resultText);
@@ -295,6 +368,8 @@ const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps
 
     setIsLoading(false);
   };
+
+  // ---
 
   return (
     <CustomScrollView>

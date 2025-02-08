@@ -19,7 +19,7 @@ const TextSnippetEditView = ({
   text,
   setText,
 }: TextSnippetEditViewProps) => {
-  const debug = true;
+  const debug = false;
 
   if (debug) {
     if (capturedPicture) {

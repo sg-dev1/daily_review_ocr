@@ -12,8 +12,6 @@ import expo.modules.kotlin.exception.Exceptions
 import expo.modules.kotlin.modules.Module
 import expo.modules.kotlin.modules.ModuleDefinition
 
-private const val STRING_TERMINATOR = "<TERMINATOR>"
-
 class OcrModule : Module() {
   // Each module class must implement the definition function. The definition consists of components
   // that describes the module's functionality and behavior.
@@ -41,11 +39,51 @@ class OcrModule : Module() {
 
       recognizer.process(inputImage)
         .addOnSuccessListener { textResult ->
-          val sortedTextBlocks = processAndSortTextBlocks(textResult)
+          val textBlocksList = mutableListOf<Map<String, Any?>>()
 
-          val result = sortedTextBlocks + STRING_TERMINATOR + textResult.text
+          textResult.textBlocks.forEach { block ->
+            val linesList = mutableListOf<Map<String, Any?>>()
 
-          promise.resolve(result)
+            block.lines.forEach { line ->
+              val wordsList = mutableListOf<Map<String, String>>()
+
+              line.elements.forEach { element ->
+                wordsList.add(
+                  mapOf(
+                    "text" to element.text
+                  )
+                )
+              }
+
+              linesList.add(
+                mapOf(
+                  "text" to line.text,
+                  "words" to wordsList
+                )
+              )
+            }
+
+            val blockMap = mapOf(
+              "text" to block.text,
+              "boundingBox" to block.boundingBox?.let { bbox ->
+                mapOf(
+                  "left" to bbox.left,
+                  "top" to bbox.top,
+                  "right" to bbox.right,
+                  "bottom" to bbox.bottom
+                )
+              },
+              "lines" to linesList
+            )
+            textBlocksList.add(blockMap)
+          }
+
+          val resultMap = mapOf(
+            "text" to textResult.text,
+            "textBlocks" to textBlocksList
+          )
+
+          promise.resolve(resultMap)
         }
         .addOnFailureListener { e ->
           promise.reject(CodedException("ML Kit error: ${e.message}", e))
@@ -55,122 +93,4 @@ class OcrModule : Module() {
         }
     }
   }
-
-  /*
-  // Generated with help of ChatGpt
-  private fun processAndSortTextBlocks(result: Text): String {
-    val textBlocks = result.textBlocks
-
-    // Custom comparator to sort by X (columns) first, then Y (top to bottom)
-    //val sortedBlocks = textBlocks.sortedWith(compareBy({ it.boundingBox?.left }, { it.boundingBox?.top }))
-    // Update 1: Change primary and secondary sorting criteria
-    val sortedBlocks = textBlocks.sortedWith(compareBy({ it.boundingBox?.top }, { it.boundingBox?.left }))
-
-    val combinedTexts = sortedBlocks.map { block ->
-        // Join all lines in the block into a single line of text
-        block.lines.joinToString(" ") { it.text.replace("\n", " ") }
-    }
-
-    // Join all combined texts into a single string
-    return combinedTexts.joinToString("\n")
-  }
-  */
-
-  private fun processAndSortTextBlocks(result: Text): String {
-    val textBlocks = result.textBlocks
-
-    // Group text blocks by X coordinate (left) to create columns
-    val columns = mutableListOf<MutableList<Text.TextBlock>>()
-
-    // Iterate over each text block and assign it to a column based on the X coordinate
-    for (block in textBlocks) {
-        val left = block.boundingBox?.left ?: continue
-
-        // Find the column to which this block belongs
-        val column = columns.find { it.isNotEmpty() && it.first().boundingBox?.left ?: Int.MAX_VALUE <= left } 
-          ?: mutableListOf<Text.TextBlock>().also { columns.add(it) }
-
-        // Add the block to the corresponding column
-        column.add(block)
-    }
-
-    // Debug output: Generate a string that summarizes the columns and their sizes
-    val columnInfo = StringBuilder()
-    columnInfo.append("Total columns: ${columns.size}\n")
-    columns.forEachIndexed { index, column ->
-        columnInfo.append("Column $index contains ${column.size} blocks\n")
-    }
-
-    // Sort each column by the Y coordinate (top) and concatenate the text
-    val sortedColumns = columns.map { column ->
-        column.sortedBy { it.boundingBox?.top }
-            .map { block ->
-                // Join all lines in the block into a single line of text
-                block.lines.joinToString(" ") { it.text.replace("\n", " ") }
-            }
-            .joinToString("\n\n")
-    }
-
-    // Join all sorted columns into a single string, separating them by a space (or any separator you prefer)
-    return sortedColumns.joinToString("\n\n\n") + STRING_TERMINATOR + columnInfo.toString()
-  }
-
-  /*
-  private fun processAndSortTextBlocks(result: Text, threshold: Int): String {
-    val textBlocks = result.textBlocks
-
-    // Function to determine if two blocks are in the same column
-    fun isSameColumn(block1: Text.TextBlock, block2: Text.TextBlock, threshold: Int): Boolean {
-        val left1 = block1.boundingBox?.left ?: 0
-        val right1 = block1.boundingBox?.right ?: 0
-        val left2 = block2.boundingBox?.left ?: 0
-        val right2 = block2.boundingBox?.right ?: 0
-
-        return (left2 in (left1 - threshold)..(right1 + threshold)) ||
-               (right2 in (left1 - threshold)..(right1 + threshold))
-    }
-
-    // Group text blocks into columns
-    val columns = mutableListOf<MutableList<Text.TextBlock>>()
-    textBlocks.forEach { block ->
-        val column = columns.find { existingColumn ->
-            existingColumn.any { existingBlock -> isSameColumn(existingBlock, block, threshold) }
-        }
-        if (column != null) {
-            column.add(block)
-        } else {
-            columns.add(mutableListOf(block))
-        }
-    }
-
-    // Debug output: Generate a string that summarizes the columns and their sizes
-    val columnInfo = StringBuilder()
-    columnInfo.append("Total columns: ${columns.size}\n")
-    columns.forEachIndexed { index, column ->
-        columnInfo.append("\tColumn $index contains ${column.size} blocks\n")
-    }
-    // END Debug
-
-    // Sort each column from top to bottom
-    val sortedColumns = columns.map { column ->
-        column.sortedBy { it.boundingBox?.top }
-    }
-
-    // Combine text from each column
-    val combinedTexts = sortedColumns.flatten().map { block ->
-        block.lines.joinToString(" ") { it.text.replace("\n", " ") }
-    }
-
-    // Debug output: Generate a string that summarizes the columns and their sizes
-    val columnInfo2 = StringBuilder()
-    columnInfo2.append("Total combinedTexts: ${combinedTexts.size}\n")
-    combinedTexts.forEachIndexed { index, column ->
-        columnInfo2.append("\tColumn $index contains text ${column}\n")
-    }
-    // END Debug
-
-    // Join all combined texts into a single string
-    return combinedTexts.joinToString("\n\n\n") + STRING_TERMINATOR + columnInfo.toString() + STRING_TERMINATOR + columnInfo2.toString()
-  }
-  */
 }
