@@ -19,6 +19,18 @@ const TextSnippetEditView = ({
   text,
   setText,
 }: TextSnippetEditViewProps) => {
+  const debug = true;
+
+  if (debug) {
+    if (capturedPicture) {
+      console.log(
+        `Captured picture width: ${capturedPicture.width}, height: ${capturedPicture.height}, uri: ${capturedPicture.uri}`
+      );
+      console.log('Exif:', capturedPicture.exif);
+      //console.log('Base64:', capturedPicture.base64);
+    }
+  }
+
   return (
     <CustomScrollView>
       <View style={styles.buttonContainer}>
@@ -38,11 +50,14 @@ const TextSnippetEditView = ({
           <Image
             style={{
               width: '100%',
-              flex: 1,
+              //flex: 1,
               resizeMode: 'contain',
+              height: undefined,
+              aspectRatio: 3 / 4,
+              //transform: [{ rotate: '90deg' }],
             }}
             source={capturedPicture}
-            resizeMode="contain"
+            //resizeMode="contain"
           />
         </View>
       )}

@@ -39,20 +39,38 @@ Grammar check
   - Could use the language identification of ML Kit to start with
      https://developers.google.com/ml-kit/language/identification/android
   - Find alternatives for language processing (grammar correction etc.)
-Improve images taken by camera
+Improve images taken by camera                                                           // done, first version
+  Things done (in CustomCameraView)
+    - Worked with ScreenOrientation, enabled change of orientation (seems that it was initially locked per default)
+    - Expo Camera - takePictureAsync: skipProcessing set to true (disabled rotation of images by expo camera)
+    - Instead implemented own rotation using manipulateAsync from expo-image-manipulator 
+      (see custom logic in fixRotation function of CustomCameraView)
+    - Added debug output to show (also in UI text box, so it can be also seen in final app):
+       * ScreenOrientation
+       * CameraOrientation (reported by onResponsiveOrientationChanged of expo camera)
+       * CameraCapturedPicture information (width, height, uri)
+       * Exif orientation
+  Initial thoughts about what to improve/ test etc.
   - Increase resolution
   - Rotate image (given device's current orientation)
   - Use proper focus
   - Could also play with zoom, torch, and flash mode
   Things to try:
     - @flash: could enable/ disable it with button, or use enableTorch boolean on CameraView component
+         - will not help, do not recommend this to be enabled
     - Set responsiveOrientationWhenOrientationLocked to true, try out onResponsiveOrientationChanged callback
+         --> this is not helpful, better would be to lock the orientation to have the 4 of "4:3" vertical and the 3 horizontal
+             (we do not want a rotation compared to the preview)
     - getAvailablePictureSizesAsync()
+         - nice way to see the sizes, but not that helpful
     - ratio, e.g. '4:3' | '16:9' | '1:1'
+         - "4:3" is the ratio to go
     - zoom, 0 (default, no zoom) to 1 (max zoom)
     - CameraPictureOptions (https://docs.expo.dev/versions/latest/sdk/camera/#camerapictureoptions) of takePictureAsync(options)
        - quality (0 - 1, where 1 is max.)
+           - tried one, not much different
        - skipProcessing --> could try to do the processing yourself
+           - using this the image is also ocassionally rotated (but best here is to retake the photo - most of the time it is not rotated ...)
   https://docs.expo.dev/versions/latest/sdk/camera/
   - Image rotation compensation
 

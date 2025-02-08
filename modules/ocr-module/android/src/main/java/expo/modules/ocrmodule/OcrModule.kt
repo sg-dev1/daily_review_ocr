@@ -114,4 +114,63 @@ class OcrModule : Module() {
     // Join all sorted columns into a single string, separating them by a space (or any separator you prefer)
     return sortedColumns.joinToString("\n\n\n") + STRING_TERMINATOR + columnInfo.toString()
   }
+
+  /*
+  private fun processAndSortTextBlocks(result: Text, threshold: Int): String {
+    val textBlocks = result.textBlocks
+
+    // Function to determine if two blocks are in the same column
+    fun isSameColumn(block1: Text.TextBlock, block2: Text.TextBlock, threshold: Int): Boolean {
+        val left1 = block1.boundingBox?.left ?: 0
+        val right1 = block1.boundingBox?.right ?: 0
+        val left2 = block2.boundingBox?.left ?: 0
+        val right2 = block2.boundingBox?.right ?: 0
+
+        return (left2 in (left1 - threshold)..(right1 + threshold)) ||
+               (right2 in (left1 - threshold)..(right1 + threshold))
+    }
+
+    // Group text blocks into columns
+    val columns = mutableListOf<MutableList<Text.TextBlock>>()
+    textBlocks.forEach { block ->
+        val column = columns.find { existingColumn ->
+            existingColumn.any { existingBlock -> isSameColumn(existingBlock, block, threshold) }
+        }
+        if (column != null) {
+            column.add(block)
+        } else {
+            columns.add(mutableListOf(block))
+        }
+    }
+
+    // Debug output: Generate a string that summarizes the columns and their sizes
+    val columnInfo = StringBuilder()
+    columnInfo.append("Total columns: ${columns.size}\n")
+    columns.forEachIndexed { index, column ->
+        columnInfo.append("\tColumn $index contains ${column.size} blocks\n")
+    }
+    // END Debug
+
+    // Sort each column from top to bottom
+    val sortedColumns = columns.map { column ->
+        column.sortedBy { it.boundingBox?.top }
+    }
+
+    // Combine text from each column
+    val combinedTexts = sortedColumns.flatten().map { block ->
+        block.lines.joinToString(" ") { it.text.replace("\n", " ") }
+    }
+
+    // Debug output: Generate a string that summarizes the columns and their sizes
+    val columnInfo2 = StringBuilder()
+    columnInfo2.append("Total combinedTexts: ${combinedTexts.size}\n")
+    combinedTexts.forEachIndexed { index, column ->
+        columnInfo2.append("\tColumn $index contains text ${column}\n")
+    }
+    // END Debug
+
+    // Join all combined texts into a single string
+    return combinedTexts.joinToString("\n\n\n") + STRING_TERMINATOR + columnInfo.toString() + STRING_TERMINATOR + columnInfo2.toString()
+  }
+  */
 }
