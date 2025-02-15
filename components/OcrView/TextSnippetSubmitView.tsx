@@ -10,6 +10,7 @@ import { TSelectedItem } from 'react-native-input-select/lib/typescript/src/type
 interface TextSnippetSubmitViewProps {
   text: string;
   resetPreviousSteps: () => void;
+  onBackButtonPressed: () => void;
 }
 
 interface BookType {
@@ -18,7 +19,9 @@ interface BookType {
 }
 
 const storage = new MMKVLoader().initialize();
-const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitViewProps) => {
+const TextSnippetSubmitView = ({ text, resetPreviousSteps, onBackButtonPressed }: TextSnippetSubmitViewProps) => {
+  //console.log('Using text', text);
+
   const [bookTitle, setBookTitle] = useState('');
   const [author, setAuthor] = useState('');
   const [note, setNote] = useState('');
@@ -145,6 +148,9 @@ const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitVi
         </View>
       </CustomScrollView>
       <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={onBackButtonPressed}>
+          <Text style={styles.buttonText}>Back</Text>
+        </TouchableOpacity>
         <TouchableOpacity disabled={submitButtonDisabled} style={styles.button} onPress={onSubmitButtonPressed}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>

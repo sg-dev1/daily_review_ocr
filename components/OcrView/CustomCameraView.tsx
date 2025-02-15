@@ -17,9 +17,10 @@ import { OcrResult, OcrTextBlock } from '../../modules/ocr-module/src/OcrModule'
 interface CustomCameraViewProps {
   setText: (value: string) => void;
   setCapturedPicture: (data: CameraCapturedPicture | null) => void;
+  onSuccess: () => void;
 }
 
-const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps) => {
+const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCameraViewProps) => {
   const debugImageCapture = true;
   const debugTextprocessing = true;
 
@@ -260,6 +261,8 @@ const CustomCameraView = ({ setText, setCapturedPicture }: CustomCameraViewProps
       //console.log('Image resized, result=', result);
       await recognizeTextFromImage(data.uri, data.width, data.height, screenOrientation, logMessages);
       setCapturedPicture(data);
+
+      onSuccess();
     } else {
       console.warn('cameraRef.current.takePictureAsync returned undefined');
     }
