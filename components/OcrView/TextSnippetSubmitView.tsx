@@ -91,64 +91,65 @@ const TextSnippetSubmitView = ({ text, resetPreviousSteps }: TextSnippetSubmitVi
   };
 
   return (
-    <CustomScrollView>
-      {errorText && <Text style={styles.errorTextContainer}>{errorText}</Text>}
+    <>
+      <CustomScrollView>
+        {errorText && <Text style={styles.errorTextContainer}>{errorText}</Text>}
 
-      <Dropdown
-        label="Books"
-        placeholder="Select a book..."
-        options={bookOptions}
-        selectedValue={selectedBook}
-        onValueChange={(value) => {
-          setSelectedBook(value);
-          const bookLst = books.filter((book) => book.title === value);
-          if (bookLst.length >= 1) {
-            setBookTitle(bookLst[0].title);
-            setAuthor(bookLst[0].author);
-          } else {
-            console.warn('Book with value ', value, ' not found in book list');
-          }
-        }}
-        primaryColor={'green'}
-      />
-
-      <View style={styles.formRowContainer}>
-        <Text style={styles.formLabel}>Book Title:</Text>
-        <TextInput
-          //editable
-          //multiline
-          onChangeText={(text) => setBookTitle(text)}
-          value={bookTitle}
-          style={styles.formTextInput}
+        <Dropdown
+          label="Books"
+          placeholder="Select a book..."
+          options={bookOptions}
+          selectedValue={selectedBook}
+          onValueChange={(value) => {
+            setSelectedBook(value);
+            const bookLst = books.filter((book) => book.title === value);
+            if (bookLst.length >= 1) {
+              setBookTitle(bookLst[0].title);
+              setAuthor(bookLst[0].author);
+            } else {
+              console.warn('Book with value ', value, ' not found in book list');
+            }
+          }}
+          primaryColor={'green'}
         />
-      </View>
 
-      <View style={styles.formRowContainer}>
-        <Text style={styles.formLabel}>Author:</Text>
-        <TextInput onChangeText={(text) => setAuthor(text)} value={author} style={styles.formTextInput} />
-      </View>
+        <View style={styles.formRowContainer}>
+          <Text style={styles.formLabel}>Book Title:</Text>
+          <TextInput
+            //editable
+            //multiline
+            onChangeText={(text) => setBookTitle(text)}
+            value={bookTitle}
+            style={styles.formTextInput}
+          />
+        </View>
 
-      <View style={styles.formRowContainer}>
-        <Text style={styles.formLabel}>Note:</Text>
-        <TextInput onChangeText={(text) => setNote(text)} value={note} style={styles.formTextInput} />
-      </View>
+        <View style={styles.formRowContainer}>
+          <Text style={styles.formLabel}>Author:</Text>
+          <TextInput onChangeText={(text) => setAuthor(text)} value={author} style={styles.formTextInput} />
+        </View>
 
-      <View style={styles.formRowContainer}>
-        <Text style={styles.formLabel}>Page#:</Text>
-        <TextInput
-          inputMode="numeric"
-          onChangeText={(text) => setPage(text)}
-          value={page}
-          style={styles.formTextInput}
-        />
-      </View>
+        <View style={styles.formRowContainer}>
+          <Text style={styles.formLabel}>Note:</Text>
+          <TextInput onChangeText={(text) => setNote(text)} value={note} style={styles.formTextInput} />
+        </View>
 
+        <View style={{ ...styles.formRowContainer, marginBottom: 20 }}>
+          <Text style={styles.formLabel}>Page#:</Text>
+          <TextInput
+            inputMode="numeric"
+            onChangeText={(text) => setPage(text)}
+            value={page}
+            style={styles.formTextInput}
+          />
+        </View>
+      </CustomScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity disabled={submitButtonDisabled} style={styles.button} onPress={onSubmitButtonPressed}>
           <Text style={styles.buttonText}>Submit</Text>
         </TouchableOpacity>
       </View>
-    </CustomScrollView>
+    </>
   );
 };
 

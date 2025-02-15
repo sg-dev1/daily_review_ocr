@@ -36,7 +36,50 @@ const TextSnippetEditView = ({
   }
 
   return (
-    <CustomScrollView>
+    <>
+      <CustomScrollView>
+        {capturedPicture && (
+          <View
+            style={{
+              height: 500,
+              marginBottom: 10,
+            }}
+          >
+            <Image
+              style={{
+                width: '100%',
+                //flex: 1,
+                resizeMode: 'contain',
+                height: undefined,
+                aspectRatio: 3 / 4,
+                //transform: [{ rotate: '90deg' }],
+              }}
+              source={capturedPicture}
+              //resizeMode="contain"
+            />
+          </View>
+        )}
+        <TextInput
+          editable
+          multiline
+          autoFocus={true}
+          selection={selection}
+          onSelectionChange={(event) => {
+            setSelection(event.nativeEvent.selection);
+          }}
+          onChangeText={(text) => setText(text)}
+          value={text}
+          style={{
+            flex: 1,
+            width: '100%',
+            borderWidth: 1,
+            borderColor: 'blue',
+            padding: 10,
+            borderRadius: 10,
+            marginBottom: 20,
+          }}
+        />
+      </CustomScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={onResetButtonPressed}>
           <Text style={styles.buttonText}>Back</Text>
@@ -45,46 +88,7 @@ const TextSnippetEditView = ({
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
       </View>
-      {capturedPicture && (
-        <View
-          style={{
-            height: 500,
-          }}
-        >
-          <Image
-            style={{
-              width: '100%',
-              //flex: 1,
-              resizeMode: 'contain',
-              height: undefined,
-              aspectRatio: 3 / 4,
-              //transform: [{ rotate: '90deg' }],
-            }}
-            source={capturedPicture}
-            //resizeMode="contain"
-          />
-        </View>
-      )}
-      <TextInput
-        editable
-        multiline
-        autoFocus={true}
-        selection={selection}
-        onSelectionChange={(event) => {
-          setSelection(event.nativeEvent.selection);
-        }}
-        onChangeText={(text) => setText(text)}
-        value={text}
-        style={{
-          flex: 1,
-          width: '100%',
-          borderWidth: 1,
-          borderColor: 'blue',
-          padding: 10,
-          borderRadius: 10,
-        }}
-      />
-    </CustomScrollView>
+    </>
   );
 };
 

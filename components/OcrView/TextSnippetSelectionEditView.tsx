@@ -19,7 +19,25 @@ const TextSnippedSelectionEditView = ({
   const debug = true;
 
   return (
-    <CustomScrollView>
+    <>
+      <CustomScrollView>
+        <TextInput
+          editable
+          multiline
+          autoFocus={true}
+          onChangeText={(text) => setText(text)}
+          value={text}
+          style={{
+            flex: 1,
+            width: '100%',
+            borderWidth: 1,
+            borderColor: 'blue',
+            padding: 10,
+            marginBottom: 20,
+            borderRadius: 10,
+          }}
+        />
+      </CustomScrollView>
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={onBackButtonPressed}>
           <Text style={styles.buttonText}>Back</Text>
@@ -28,23 +46,7 @@ const TextSnippedSelectionEditView = ({
           <Text style={styles.buttonText}>Next</Text>
         </TouchableOpacity>
       </View>
-
-      <TextInput
-        editable
-        multiline
-        autoFocus={true}
-        onChangeText={(text) => setText(text)}
-        value={text}
-        style={{
-          flex: 1,
-          width: '100%',
-          borderWidth: 1,
-          borderColor: 'blue',
-          padding: 10,
-          borderRadius: 10,
-        }}
-      />
-    </CustomScrollView>
+    </>
   );
 };
 

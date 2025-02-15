@@ -414,6 +414,7 @@ const styles = StyleSheet.create({
     flex: 1,
     width: '100%',
     resizeMode: 'contain',
+    marginBottom: 20,
   },
   buttonContainer: {
     flex: 1,

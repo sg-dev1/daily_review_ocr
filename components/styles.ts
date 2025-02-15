@@ -25,8 +25,12 @@ export const globalStyles = StyleSheet.create({
     borderRadius: 10,
   },
   buttonContainer: {
-    flex: 1,
+    //flex: 1,
     flexDirection: 'row',
+    position: 'absolute',
+    bottom: 10,
+    justifyContent: 'space-between',
+    width: '100%',
   },
   button: {
     flex: 1,
