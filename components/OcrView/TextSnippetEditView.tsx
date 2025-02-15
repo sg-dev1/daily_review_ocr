@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CustomScrollView from '../CustomScrollView';
 import { TouchableOpacity, View, Text, Image, TextInput } from 'react-native';
 import { globalStyles as styles } from '../styles';
@@ -10,6 +10,8 @@ interface TextSnippetEditViewProps {
   onNextButtonPressed: () => void;
   text: string;
   setText: (value: string) => void;
+  selection: { start: number; end: number };
+  setSelection: (newSelection: { start: number; end: number }) => void;
 }
 
 const TextSnippetEditView = ({
@@ -18,6 +20,8 @@ const TextSnippetEditView = ({
   onNextButtonPressed,
   text,
   setText,
+  selection,
+  setSelection,
 }: TextSnippetEditViewProps) => {
   const debug = false;
 
@@ -64,6 +68,11 @@ const TextSnippetEditView = ({
       <TextInput
         editable
         multiline
+        autoFocus={true}
+        selection={selection}
+        onSelectionChange={(event) => {
+          setSelection(event.nativeEvent.selection);
+        }}
         onChangeText={(text) => setText(text)}
         value={text}
         style={{

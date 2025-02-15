@@ -15,6 +15,8 @@ Observations
   - If there are bad lighting conditions (leading to unsharp images) the results are very bad,
     with good lighting you get quite accurate results (the rotation of the images seems not to matter, however it is a bit anoying when it is rotated)
 TODOs
+UI Improvements                                                                          // TODO
+  - Next/Back buttons should be always visible (could also be placed at bottom)
 Advanced Text (Post)processing
   Things done (in CustomCameraView)                                                      // partly done, column detection missing
     - Return the whole object detected by ML Kit from the Kotlin code
