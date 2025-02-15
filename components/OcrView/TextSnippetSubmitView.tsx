@@ -6,16 +6,12 @@ import { MMKVLoader, useMMKVStorage } from 'react-native-mmkv-storage';
 import { globalStyles as styles } from '../styles';
 import Dropdown from 'react-native-input-select';
 import { TSelectedItem } from 'react-native-input-select/lib/typescript/src/types/index.types';
+import { BookType } from '../../lib/types/BookType';
 
 interface TextSnippetSubmitViewProps {
   text: string;
   resetPreviousSteps: () => void;
   onBackButtonPressed: () => void;
-}
-
-interface BookType {
-  title: string;
-  author: string;
 }
 
 const storage = new MMKVLoader().initialize();

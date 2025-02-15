@@ -44,4 +44,10 @@ export const globalStyles = StyleSheet.create({
     fontWeight: 'bold',
     color: 'white',
   },
+  headerLabel: {
+    flex: 1,
+    fontSize: 24,
+    fontWeight: 700,
+    alignSelf: 'center',
+  },
 });
