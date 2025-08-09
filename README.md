@@ -1,6 +1,6 @@
 # Ocr App for Daily Review
 
-This is the accompanying mobile app for [Daily Review]().
+This is the accompanying mobile app for [Daily Review](https://github.com/sg-dev1/daily_review).
 It allows users to capture images of book pages, extract the text using text recognition technology, and send the extracted content directly to the Daily Review web backend.
 
 ## Getting Started
