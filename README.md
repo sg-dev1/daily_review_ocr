@@ -1,4 +1,9 @@
-# Ocr-App
+# Ocr App for Daily Review
+
+This is the accompanying mobile app for [Daily Review]().
+It allows users to capture images of book pages, extract the text using text recognition technology, and send the extracted content directly to the Daily Review web backend.
+
+## Getting Started
 
 - Based on expo app template (created with npx create-expo-app@latest)
 - Take picture using [Expo Camera module](https://docs.expo.dev/versions/latest/sdk/camera)
@@ -18,7 +23,7 @@
   eas build --platform android --profile preview
   ```
 
-(Can also build for ios using `--platform ios`)
+(Can also build for ios using `--platform ios`, however I have never tested this)
 
 ---
 
