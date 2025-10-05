@@ -35,6 +35,14 @@ const TextSnippetEditView = ({
     }
   }
 
+  const insertTextAtCursor = (insertText: string) => {
+    const newText = text.slice(0, selection.start) + insertText + text.slice(selection.end);
+    setText(newText);
+    // place the cursor
+    const newPos = selection.start + insertText.length;
+    setSelection({ start: newPos, end: newPos });
+  };
+
   return (
     <>
       <CustomScrollView>
@@ -86,6 +94,10 @@ const TextSnippetEditView = ({
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onNextButtonPressed}>
           <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => insertTextAtCursor('[...]')}>
+          <Text style={styles.buttonText}>[...]</Text>
         </TouchableOpacity>
       </View>
     </>

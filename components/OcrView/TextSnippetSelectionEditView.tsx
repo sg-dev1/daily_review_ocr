@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import CustomScrollView from '../CustomScrollView';
 import { TextInput, TouchableOpacity, View, Text } from 'react-native';
 import { globalStyles as styles } from '../styles';
@@ -17,6 +17,15 @@ const TextSnippedSelectionEditView = ({
   setText,
 }: TextSnippedSelectionEditViewProps) => {
   const debug = true;
+  const [selection, setSelection] = useState<{ start: number; end: number }>({ start: 0, end: 0 });
+
+  const insertTextAtCursor = (insertText: string) => {
+    const newText = text.slice(0, selection.start) + insertText + text.slice(selection.end);
+    setText(newText);
+    // place the cursor
+    const newPos = selection.start + insertText.length;
+    setSelection({ start: newPos, end: newPos });
+  };
 
   return (
     <>
@@ -25,6 +34,10 @@ const TextSnippedSelectionEditView = ({
           editable
           multiline
           autoFocus={true}
+          selection={selection}
+          onSelectionChange={(event) => {
+            setSelection(event.nativeEvent.selection);
+          }}
           onChangeText={(text) => setText(text)}
           value={text}
           style={{
@@ -44,6 +57,10 @@ const TextSnippedSelectionEditView = ({
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={onNextButtonPressed}>
           <Text style={styles.buttonText}>Next</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => insertTextAtCursor('[...]')}>
+          <Text style={styles.buttonText}>[...]</Text>
         </TouchableOpacity>
       </View>
     </>
