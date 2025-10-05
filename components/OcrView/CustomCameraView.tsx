@@ -6,13 +6,14 @@ import {
   useCameraPermissions,
 } from 'expo-camera';
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, TouchableOpacity, View, Text, Button } from 'react-native';
+import { StyleSheet, TouchableOpacity, View, Text, Button, Dimensions } from 'react-native';
 import OcrModule from '../../modules/ocr-module';
-import CustomScrollView from '../CustomScrollView';
 //import ImageResizer from 'react-native-image-resizer';  // to be decided if this can be removed from dependencies
 import { manipulateAsync } from 'expo-image-manipulator';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { OcrResult, OcrTextBlock } from '../../modules/ocr-module/src/OcrModule';
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
 interface CustomCameraViewProps {
   setText: (value: string) => void;
@@ -27,6 +28,9 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
   const [isLoading, setIsLoading] = useState(false);
   const cameraRef = useRef<CameraView>(null);
   const [cameraOrientation, setCameraOrientation] = useState<CameraOrientation>('portrait');
+  const [isFlashEnabled, setIsFlashEnabled] = useState(false);
+
+  const [cameraHeight, setCameraHeight] = useState(screenHeight);
 
   const [permission, requestPermission] = useCameraPermissions();
 
@@ -52,6 +56,10 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
     // It seems orientation is initially locked per default...
     // (maybe the app.json is also only respected after a new build?)
     ScreenOrientation.unlockAsync();
+
+    // Bei 4:3-Ratio: Höhe = Breite * 4/3
+    const ratioHeight = screenWidth * (4 / 3);
+    setCameraHeight(ratioHeight);
   }, []);
 
   if (!permission) {
@@ -242,8 +250,10 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
 
     //await ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.PORTRAIT_UP);
 
-    //const captureOptions: CameraPictureOptions = { quality: 1, exif: true };
-    const captureOptions: CameraPictureOptions = { exif: true, skipProcessing: true };
+    // Settings in previous version
+    //const captureOptions: CameraPictureOptions = { exif: true, skipProcessing: true };
+    // Settings as suggested by ChatGPT
+    const captureOptions: CameraPictureOptions = { exif: true, quality: 1, base64: false, skipProcessing: false };
 
     const data = await cameraRef.current.takePictureAsync(captureOptions);
     if (debugImageCapture) {
@@ -259,6 +269,37 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
       //console.log('create rresized image...');
       //const result = await ImageResizer.createResizedImage(data.uri, 4000, 3000, 'JPEG', 100, 0);
       //console.log('Image resized, result=', result);
+
+      /*
+      let enhanced = data;
+      try {
+        console.log('creating enhanced image ...');
+        enhanced = await ImageManipulator.manipulateAsync(
+          data.uri,
+          [
+            { resize: { width: 1920 } },
+            { adjust: { brightness: 0.1 } },
+            { adjust: { contrast: 1.3 } },
+            { adjust: { saturation: 0 } },
+            // brightness = 0 → unchanged
+            // contrast = 1.3 → 30% stronger
+            // saturation = 0 → grayscale
+          ],
+          {
+            compress: 1, // keep full quality
+          }
+        );
+        console.log('.... enhanced image', enhanced);
+      } catch (error) {
+        console.error('ImageManipulator error:', error);
+      }
+      */
+
+      if (debugImageCapture) {
+        const logMsg = 'Using image for text recognition: ' + data;
+        console.log(logMsg);
+        logMessages.push(logMsg);
+      }
       await recognizeTextFromImage(data.uri, data.width, data.height, screenOrientation, logMessages);
       setCapturedPicture(data);
 
@@ -266,6 +307,10 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
     } else {
       console.warn('cameraRef.current.takePictureAsync returned undefined');
     }
+  };
+
+  const toggleFlash = () => {
+    setIsFlashEnabled((v) => !v);
   };
 
   // ---
@@ -375,77 +420,68 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
   // ---
 
   return (
-    <CustomScrollView>
-      <View style={styles.cameraView}>
+    <View style={styles.container}>
+      <View style={[styles.cameraView, { height: cameraHeight }]}>
         <CameraView
           style={styles.camera}
-          facing={'back'}
-          ref={cameraRef}
+          facing="back"
           ratio="4:3"
-          responsiveOrientationWhenOrientationLocked={true}
-          onResponsiveOrientationChanged={(event) => {
-            setCameraOrientation(event.orientation);
-          }}
+          ref={cameraRef}
+          enableTorch={isFlashEnabled}
+          responsiveOrientationWhenOrientationLocked
+          onResponsiveOrientationChanged={(event) => setCameraOrientation(event.orientation)}
+          autofocus="on"
         >
           <View style={styles.buttonContainer}>
             <TouchableOpacity disabled={isLoading} style={styles.button} onPress={toggleImageRecognition}>
               <Text style={styles.buttonText}>Recognize</Text>
             </TouchableOpacity>
+            <TouchableOpacity disabled={isLoading} style={styles.button} onPress={toggleFlash}>
+              <Text style={styles.buttonText}>Toggle Flash</Text>
+            </TouchableOpacity>
           </View>
         </CameraView>
       </View>
-    </CustomScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
+    backgroundColor: 'black',
+    justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#F5FCFF',
-    paddingTop: 0,
+  },
+  cameraView: {
+    width: '100%',
+    overflow: 'hidden',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  camera: {
+    width: '100%',
+    height: '100%',
+  },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 40,
+    flexDirection: 'row',
+    alignSelf: 'center',
+    gap: 20,
+  },
+  button: {
+    backgroundColor: 'rgba(255,255,255,0.8)',
+    padding: 10,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: '#000',
+    fontWeight: 'bold',
   },
   message: {
     textAlign: 'center',
     paddingBottom: 10,
-  },
-  cameraView: {
-    height: 500,
-  },
-  camera: {
-    flex: 1,
-    width: '100%',
-    resizeMode: 'contain',
-    marginBottom: 20,
-  },
-  buttonContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: 'transparent',
-    margin: 64,
-  },
-  button: {
-    flex: 1,
-    alignSelf: 'flex-end',
-    alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: 'white',
-  },
-  text: {
-    flex: 1,
-    width: '100%',
-    borderWidth: 1,
-    borderColor: 'blue',
-    padding: 10,
-    borderRadius: 10,
-  },
-  image: {
-    width: '100%',
-    height: 200,
   },
 });
 
