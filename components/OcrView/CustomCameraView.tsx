@@ -8,8 +8,7 @@ import {
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, TouchableOpacity, View, Text, Button, Dimensions } from 'react-native';
 import OcrModule from '../../modules/ocr-module';
-//import ImageResizer from 'react-native-image-resizer';  // to be decided if this can be removed from dependencies
-import { manipulateAsync } from 'expo-image-manipulator';
+import { ImageManipulator } from 'expo-image-manipulator';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { OcrResult, OcrTextBlock } from '../../modules/ocr-module/src/OcrModule';
 
@@ -20,6 +19,9 @@ interface CustomCameraViewProps {
   setCapturedPicture: (data: CameraCapturedPicture | null) => void;
   onSuccess: () => void;
 }
+
+// Type as used in ImageManipulatorContext.resize()  (expo-image-manipulator/src/ImageManipulatorContext.ts)
+type ImageResizeType = { width?: number | null; height?: number | null };
 
 const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCameraViewProps) => {
   const debugImageCapture = true;
@@ -136,6 +138,25 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
   };
 
   // ---
+  //
+  // Logic to take and manipulate a camera image
+  //
+
+  // Wrapper around the new object-oriented API of expo-image-manipulator
+  const imageManipulatorWrapper = async (uri: string, rotationInDegrees?: number, resize?: ImageResizeType) => {
+    let manipulatorCtx = ImageManipulator.manipulate(uri);
+
+    if (resize) {
+      manipulatorCtx = manipulatorCtx.resize(resize);
+    }
+    if (rotationInDegrees) {
+      manipulatorCtx = manipulatorCtx.rotate(rotationInDegrees);
+    }
+
+    const imgRef = await manipulatorCtx.renderAsync();
+    const result = await imgRef.saveAsync({ base64: false, compress: 1 });
+    return result;
+  };
 
   // These values are tested with a Google Pixel 7a
   // (May be different on other phone, I don't know)
@@ -190,7 +211,7 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
         logMessages.push(logMsg);
       }
 
-      const result = await manipulateAsync(uri, [{ rotate: rotateValue }]);
+      const result = await imageManipulatorWrapper(uri, rotateValue);
       return result.uri;
     } else {
       if (exifOrientation === 1 && orientation === ScreenOrientation.Orientation.LANDSCAPE_RIGHT) {
@@ -255,7 +276,7 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
     // Settings as suggested by ChatGPT
     const captureOptions: CameraPictureOptions = { exif: true, quality: 1, base64: false, skipProcessing: false };
 
-    const data = await cameraRef.current.takePictureAsync(captureOptions);
+    let data = await cameraRef.current.takePictureAsync(captureOptions);
     if (debugImageCapture) {
       const logMsg = 'CameraCapturedPicture: ' + cameraCapturedPictureToString(data);
       console.log(logMsg);
@@ -270,33 +291,11 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
       //const result = await ImageResizer.createResizedImage(data.uri, 4000, 3000, 'JPEG', 100, 0);
       //console.log('Image resized, result=', result);
 
-      /*
-      let enhanced = data;
-      try {
-        console.log('creating enhanced image ...');
-        enhanced = await ImageManipulator.manipulateAsync(
-          data.uri,
-          [
-            { resize: { width: 1920 } },
-            { adjust: { brightness: 0.1 } },
-            { adjust: { contrast: 1.3 } },
-            { adjust: { saturation: 0 } },
-            // brightness = 0 → unchanged
-            // contrast = 1.3 → 30% stronger
-            // saturation = 0 → grayscale
-          ],
-          {
-            compress: 1, // keep full quality
-          }
-        );
-        console.log('.... enhanced image', enhanced);
-      } catch (error) {
-        console.error('ImageManipulator error:', error);
-      }
-      */
+      // Resize the image to smaller size
+      data = await imageManipulatorWrapper(data.uri, undefined /*rotationInDegrees*/, { width: 1600 });
 
       if (debugImageCapture) {
-        const logMsg = 'Using image for text recognition: ' + data;
+        const logMsg = 'Using image for text recognition: ' + cameraCapturedPictureToString(data);
         console.log(logMsg);
         logMessages.push(logMsg);
       }
@@ -314,6 +313,9 @@ const CustomCameraView = ({ setText, setCapturedPicture, onSuccess }: CustomCame
   };
 
   // ---
+  //
+  // Text recognition in image using Google's ML Kit
+  //
 
   const printTextBlocks = (textBlocks: OcrTextBlock[]) => {
     for (let i = 0; i < textBlocks.length; i++) {
